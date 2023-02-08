@@ -106,7 +106,9 @@ You can then create a symbolic link `data` to the `/dataset` directory in the do
 ### Data Preparation
 
 #### nuScenes
-
+```bash
+python tools/create_data.py nuscenes --root-path ./data/nuscenes --out-dir ./data/nuscenes --extra-tag nuscenes --max-sweeps 0 --workers 12
+```
 Please follow the instructions from [here](https://github.com/open-mmlab/mmdetection3d/blob/master/docs/en/datasets/nuscenes_det.md) to download and preprocess the nuScenes dataset. Please remember to download both detection dataset and the map extension (for BEV map segmentation). After data preparation, you will be able to see the following directory structure (as is indicated in mmdetection3d):
 
 ```
