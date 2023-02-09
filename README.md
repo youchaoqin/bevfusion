@@ -149,6 +149,9 @@ For example, if you want to evaluate the detection variant of BEVFusion, you can
 
 ```bash
 torchpack dist-run -np 8 python tools/test.py configs/nuscenes/det/transfusion/secfpn/camera+lidar/swint_v0p075/convfuser.yaml pretrained/bevfusion-det.pth --eval bbox
+
+# or use torch directly:
+python -m torch.distributed.launch --nproc_per_node=gpu tools/test.py configs/nuscenes/det/transfusion/secfpn/camera+lidar/swint_v0p075/convfuser.yaml pretrained/bevfusion-det.pth --eval bbox
 ```
 
 While for the segmentation variant of BEVFusion, this command will be helpful:
@@ -188,6 +191,9 @@ torchpack dist-run -np 8 python tools/train.py configs/nuscenes/seg/lidar-center
 For BEVFusion detection model, please run:
 ```bash
 torchpack dist-run -np 8 python tools/train.py configs/nuscenes/det/transfusion/secfpn/camera+lidar/swint_v0p075/convfuser.yaml --model.encoders.camera.backbone.init_cfg.checkpoint pretrained/swint-nuimages-pretrained.pth --load_from pretrained/lidar-only-det.pth 
+
+# or use torch directly:
+python -m torch.distributed.launch --nproc_per_node=gpu tools/train.py configs/nuscenes/det/transfusion/secfpn/camera+lidar/swint_v0p075/convfuser.yaml --model.encoders.camera.backbone.init_cfg.checkpoint pretrained/swint-nuimages-pretrained.pth --load_from pretrained/lidar-only-det.pth
 ```
 
 For BEVFusion segmentation model, please run:

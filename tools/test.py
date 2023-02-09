@@ -112,10 +112,10 @@ def parse_args():
 
 def main():
     args = parse_args()
-    dist.init()
+    # dist.init()
 
     torch.backends.cudnn.benchmark = True
-    torch.cuda.set_device(dist.local_rank())
+    torch.cuda.set_device(args.local_rank)
 
     assert args.out or args.eval or args.format_only or args.show or args.show_dir, (
         "Please specify at least one operation (save/eval/format/show the "
