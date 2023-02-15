@@ -7,7 +7,8 @@ import time
 import numpy as np
 import torch
 from mmcv import Config
-from torchpack import distributed as dist
+# from torchpack import distributed as dist
+import torch.distributed as dist
 from torchpack.environ import auto_set_run_dir, set_run_dir
 from torchpack.utils.config import configs
 
@@ -18,11 +19,12 @@ from mmdet3d.utils import get_root_logger, convert_sync_batchnorm, recursive_eva
 
 
 def main():
-    dist.init()
+    dist.init_process_group(backend='nccl')
 
     parser = argparse.ArgumentParser()
     parser.add_argument("config", metavar="FILE", help="config file")
     parser.add_argument("--run-dir", metavar="DIR", help="run directory")
+    parser.add_argument("--local_rank", type=int, default=0)
     args, opts = parser.parse_known_args()
 
     configs.load(args.config, recursive=True)
@@ -31,7 +33,7 @@ def main():
     cfg = Config(recursive_eval(configs), filename=args.config)
 
     torch.backends.cudnn.benchmark = cfg.cudnn_benchmark
-    torch.cuda.set_device(dist.local_rank())
+    torch.cuda.set_device(args.local_rank)
 
     if args.run_dir is None:
         args.run_dir = auto_set_run_dir()

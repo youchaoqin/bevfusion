@@ -6,7 +6,8 @@ import warnings
 import mmcv
 import torch
 from torchpack.utils.config import configs
-from torchpack import distributed as dist
+# from torchpack import distributed as dist
+import torch.distributed as dist
 from mmcv import Config, DictAction
 from mmcv.cnn import fuse_conv_bn
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
@@ -112,7 +113,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    # dist.init()
+    dist.init_process_group(backend='nccl')
 
     torch.backends.cudnn.benchmark = True
     torch.cuda.set_device(args.local_rank)

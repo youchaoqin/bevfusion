@@ -199,6 +199,9 @@ python -m torch.distributed.launch --nproc_per_node=gpu tools/train.py configs/n
 For BEVFusion segmentation model, please run:
 ```bash
 torchpack dist-run -np 8 python tools/train.py configs/nuscenes/seg/fusion-bev256d2-lss.yaml --model.encoders.camera.backbone.init_cfg.checkpoint pretrained/swint-nuimages-pretrained.pth
+
+# or use torch directly:
+python -m torch.distributed.launch --nproc_per_node=gpu tools/train.py configs/nuscenes/seg/fusion-bev256d2-lss.yaml --model.encoders.camera.backbone.init_cfg.checkpoint pretrained/swint-nuimages-pretrained.pth
 ```
 
 Note: please run `tools/test.py` separately after training to get the final evaluation metrics.
