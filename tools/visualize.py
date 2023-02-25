@@ -8,9 +8,10 @@ import torch
 from mmcv import Config
 from mmcv.parallel import MMDistributedDataParallel
 from mmcv.runner import load_checkpoint
-from torchpack import distributed as dist
+# from torchpack import distributed as dist
+import torch.distributed as dist
 from torchpack.utils.config import configs
-from torchpack.utils.tqdm import tqdm
+from tqdm import tqdm
 
 from mmdet3d.core import LiDARInstance3DBoxes
 from mmdet3d.core.utils import visualize_camera, visualize_lidar, visualize_map
@@ -36,7 +37,7 @@ def recursive_eval(obj, globals=None):
 
 
 def main() -> None:
-    dist.init()
+    dist.init_process_group(backend='nccl')
 
     parser = argparse.ArgumentParser()
     parser.add_argument("config", metavar="FILE")
@@ -46,7 +47,9 @@ def main() -> None:
     parser.add_argument("--bbox-classes", nargs="+", type=int, default=None)
     parser.add_argument("--bbox-score", type=float, default=None)
     parser.add_argument("--map-score", type=float, default=0.5)
+    parser.add_argument("--skip_interval", type=int, default=1)
     parser.add_argument("--out-dir", type=str, default="viz")
+    parser.add_argument("--local_rank", type=int, default=0)
     args, opts = parser.parse_known_args()
 
     configs.load(args.config, recursive=True)
@@ -55,7 +58,7 @@ def main() -> None:
     cfg = Config(recursive_eval(configs), filename=args.config)
 
     torch.backends.cudnn.benchmark = cfg.cudnn_benchmark
-    torch.cuda.set_device(dist.local_rank())
+    torch.cuda.set_device(args.local_rank)
 
     # build the dataloader
     dataset = build_dataset(cfg.data[args.split])
@@ -78,8 +81,16 @@ def main() -> None:
             broadcast_buffers=False,
         )
         model.eval()
-
+    
+    skip_interval = int(args.skip_interval)
+    data_idx = 0
     for data in tqdm(dataflow):
+        if data_idx % skip_interval != 0:
+            data_idx += 1
+            continue
+        else:
+            data_idx += 1
+
         metas = data["metas"].data[0][0]
         name = "{}-{}".format(metas["timestamp"], metas["token"])
 
@@ -130,7 +141,7 @@ def main() -> None:
         else:
             masks = None
 
-        if "img" in data:
+        if "img" in data and masks is None:
             for k, image_path in enumerate(metas["filename"]):
                 image = mmcv.imread(image_path)
                 visualize_camera(
@@ -142,7 +153,7 @@ def main() -> None:
                     classes=cfg.object_classes,
                 )
 
-        if "points" in data:
+        if "points" in data and masks is None:
             lidar = data["points"].data[0][0].numpy()
             visualize_lidar(
                 os.path.join(args.out_dir, "lidar", f"{name}.png"),

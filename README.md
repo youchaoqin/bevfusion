@@ -206,6 +206,16 @@ python -m torch.distributed.launch --nproc_per_node=gpu tools/train.py configs/n
 
 Note: please run `tools/test.py` separately after training to get the final evaluation metrics.
 
+###  Visualization
+visualization predicted results on val set
+```bash
+### detection, fusion model:
+python -m torch.distributed.launch --nproc_per_node=gpu tools/visualize.py configs/nuscenes/det/transfusion/secfpn/camera+lidar/swint_v0p075/convfuser.yaml --mode pred --checkpoint pretrained/bevfusion-det.pth --split val --bbox-score 0.1 --skip_interval 60 --out-dir viz/viz_fusion_det_official
+
+### segmentation, fusion model:
+python -m torch.distributed.launch --nproc_per_node=gpu tools/visualize.py configs/nuscenes/seg/fusion-bev256d2-lss.yaml --mode pred --checkpoint pretrained/bevfusion-seg.pth --split val --map-score 0.5 --skip_interval 60 --out-dir viz/viz_fusion_seg_official
+```
+
 ## FAQs
 
 Q: Can we directly use the info files prepared by mmdetection3d?
